@@ -33,23 +33,56 @@ public class ChangePasswordServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
+                response.setContentType("text/html;charset=UTF-8");
         int iduser = Integer.parseInt(request.getParameter("iduser"));
         String password = request.getParameter("password");
         String newpassword = request.getParameter("newpassword");
         String repeatpassword = request.getParameter("repeatpassword");
-        request.getAttribute("user_acc");
+//        Users user =  (Users)request.getAttribute("user_acc");
         if (!newpassword.equals(repeatpassword)) {
             response.sendRedirect("changepass.jsp");
         } else {
-            UsersDao dao = new UsersDao();
-            Users us = dao.checkId(iduser);
-            if (us != null) {
-                dao.changePassword(new Users(iduser, password, newpassword, repeatpassword));
-                response.sendRedirect("login");
-            } else {
-                response.sendRedirect("changepass.jsp");
+//            UsersDao dao = new UsersDao();
+//            Users us = dao.checkId(iduser);
+//            if (us != null) {
+//                
+//                //kiem tra neu mat khau cu khong dung voi csdl thi bat nhap lai
+//                if(!password.equals(dao)){
+//                    System.out.println("sai");
+//                    response.sendRedirect("changepass.jsp");
+//                }
+//                
+//                dao.changePassword(new Users(iduser, password, newpassword, repeatpassword));
+//                response.sendRedirect("login");
+//            } else {
+//                response.sendRedirect("changepass.jsp");
+//            }
+
+            DBUtil db = DBUtil.getInstance();
+            try {
+                Connection con = db.getConnection();
+                Statement statement = con.createStatement();
+                ResultSet rs = statement.executeQuery("SELECT * FROM Users WHERE iduser=" + iduser + "");
+
+                while (rs.next()) {
+                    String oldPassword = rs.getString("password");
+                    if (!password.equals(oldPassword)) {
+                        response.sendRedirect("changepass.jsp");
+                    } else {
+                        UsersDao dao = new UsersDao();
+                        Users us = dao.checkId(iduser);
+                        if (us != null) {
+                            dao.changePassword(new Users(iduser, password, newpassword, repeatpassword));
+                            response.sendRedirect("login");
+                        } else {
+                            response.sendRedirect("changepass.jsp");
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+
         }
     }
 
